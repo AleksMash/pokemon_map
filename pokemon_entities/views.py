@@ -67,6 +67,7 @@ def show_pokemon(request, pokemon_id):
     abs_uri: str = request.build_absolute_uri('/')
     pokemon_json['pokemon_id'] = pokemon.id
     pokemon_json['title_ru'] = pokemon.name
+    pokemon_json['description'] = pokemon.description
     pokemon_json['img_url'] = abs_uri.rstrip('/') + pokemon.image.url
     entities = PokemonEntity.objects.filter(pokemon=pokemon,
                                             appeared_at__lte=localtime(),

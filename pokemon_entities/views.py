@@ -65,12 +65,19 @@ def show_pokemon(request, pokemon_id):
         return HttpResponseNotFound('<h1>Такой покемон не найден</h1>')
     pokemon_json = {}
     abs_uri: str = request.build_absolute_uri('/')
-    pokemon_json['pokemon_id'] = pokemon.id
+    pokemon_json['pokemon_id'] = pokemon.pk
     pokemon_json['title_ru'] = pokemon.name
     pokemon_json['title_en'] = pokemon.name_en
     pokemon_json['title_jp'] = pokemon.name_jp
     pokemon_json['description'] = pokemon.description
     pokemon_json['img_url'] = abs_uri.rstrip('/') + pokemon.image.url
+    ancestor: Pokemon = pokemon.ancestor
+    if ancestor:
+        ancestor_json = {}
+        ancestor_json['title_ru'] = ancestor.name
+        ancestor_json['pokemon_id'] = ancestor.pk
+        ancestor_json['img_url'] = abs_uri.rstrip('/') + ancestor.image.url
+        pokemon_json['next_evolution'] = ancestor_json
     entities = PokemonEntity.objects.filter(pokemon=pokemon,
                                             appeared_at__lte=localtime(),
                                             disappeared_at__gt=localtime()

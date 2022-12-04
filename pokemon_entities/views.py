@@ -77,7 +77,15 @@ def show_pokemon(request, pokemon_id):
         ancestor_json['title_ru'] = ancestor.name
         ancestor_json['pokemon_id'] = ancestor.pk
         ancestor_json['img_url'] = abs_uri.rstrip('/') + ancestor.image.url
-        pokemon_json['next_evolution'] = ancestor_json
+        pokemon_json['previous_evolution'] = ancestor_json
+    descendants = pokemon.descendant.all()
+    if descendants:
+        descendant = descendants[0]
+        descendant_json = {}
+        descendant_json['title_ru'] = descendant.name
+        descendant_json['pokemon_id'] = descendant.pk
+        descendant_json['img_url'] = abs_uri.rstrip('/') + descendant.image.url
+        pokemon_json['next_evolution'] = descendant_json
     entities = PokemonEntity.objects.filter(pokemon=pokemon,
                                             appeared_at__lte=localtime(),
                                             disappeared_at__gt=localtime()

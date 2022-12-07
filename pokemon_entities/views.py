@@ -75,7 +75,7 @@ def show_pokemon(request, pokemon_id):
         ancestor_json["pokemon_id"] = ancestor.pk
         ancestor_json["img_url"] = abs_uri.rstrip("/") + ancestor.image.url
         pokemon_json["previous_evolution"] = ancestor_json
-    descendants = pokemon.descendant.all()
+    descendants = pokemon.descendants.all()
     if descendants:
         descendant = descendants[0]
         descendant_json = {}

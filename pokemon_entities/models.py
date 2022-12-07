@@ -8,7 +8,7 @@ class Pokemon(models.Model):
     image = models.ImageField(null=True, blank=True, verbose_name="Изображение")
     description = models.TextField(default="", blank=True, verbose_name="Описание")
     ancestor = models.ForeignKey(
-        "self", on_delete=models.SET_NULL, null=True, verbose_name="Из кого эволюционировал", related_name="descendant"
+        "self", on_delete=models.SET_NULL, null=True, verbose_name="Из кого эволюционировал", related_name="descendants"
     )
 
     def __str__(self):
@@ -16,7 +16,8 @@ class Pokemon(models.Model):
 
 
 class PokemonEntity(models.Model):
-    pokemon = models.ForeignKey(Pokemon, on_delete=models.CASCADE, verbose_name="Покемон")
+    pokemon = models.ForeignKey(Pokemon, on_delete=models.CASCADE, verbose_name="Покемон",
+                                related_name='entities')
     lat = models.FloatField(verbose_name="Широта")
     lon = models.FloatField(verbose_name="Долгота")
     appeared_at = models.DateTimeField(default=None, verbose_name="Дата и время появления")

@@ -31,8 +31,8 @@ def add_pokemon(folium_map, lat, lon, image_url=DEFAULT_IMAGE_URL):
 
 def show_all_pokemons(request):
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
-    loca_ltime = localtime()
-    entities = PokemonEntity.objects.filter(appeared_at__lte=loca_ltime, disappeared_at__gt=loca_ltime)
+    current_time = localtime()
+    entities = PokemonEntity.objects.filter(appeared_at__lte=current_time, disappeared_at__gt=current_time)
     for entity in entities:
         image_url = request.build_absolute_uri(location=entity.pokemon.image.url)
         add_pokemon(folium_map, entity.lat, entity.lon, image_url)
@@ -60,7 +60,7 @@ def show_all_pokemons(request):
 
 def show_pokemon(request, pokemon_id):
     pokemon = get_object_or_404(Pokemon, pk=pokemon_id)
-    pokemon_json = {
+    pokemon_serialized = {
         'pokemon_id': pokemon.pk,
         'title_ru': pokemon.name,
         'title_en': pokemon.name_en,
@@ -70,23 +70,22 @@ def show_pokemon(request, pokemon_id):
     }
     ancestor: Pokemon = pokemon.ancestor
     if ancestor:
-        ancestor_json = {
+        ancestor_serialized = {
             'title_ru': ancestor.name,
             'pokemon_id': ancestor.pk,
             'img_url': request.build_absolute_uri(location=ancestor.image.url),
         }
-        pokemon_json["previous_evolution"] = ancestor_json
-    descendants = pokemon.descendants.all()
-    if descendants:
-        descendant = descendants[0]
-        descendant_json = {
+        pokemon_serialized["previous_evolution"] = ancestor_serialized
+    descendant = pokemon.descendants.all().first()
+    if descendant:
+        descendant_serialized = {
             'title_ru': descendant.name,
             'pokemon_id': descendant.pk,
             'img_url': request.build_absolute_uri(location=descendant.image.url),
         }
-        pokemon_json["next_evolution"] = descendant_json
-    local_time = localtime()
-    entities = pokemon.entities.filter(appeared_at__lte=local_time, disappeared_at__gt=local_time)
+        pokemon_serialized["next_evolution"] = descendant_serialized
+    current_time = localtime()
+    entities = pokemon.entities.filter(appeared_at__lte=current_time, disappeared_at__gt=current_time)
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
     for entity in entities:
         image_url = request.build_absolute_uri(location=entity.pokemon.image.url)

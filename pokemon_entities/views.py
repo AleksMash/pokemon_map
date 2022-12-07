@@ -30,18 +30,19 @@ def add_pokemon(folium_map, lat, lon, image_url=DEFAULT_IMAGE_URL):
 
 def show_all_pokemons(request):
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
-    abs_uri: str = request.build_absolute_uri("/")
     loca_ltime = localtime()
     entities = PokemonEntity.objects.filter(appeared_at__lte=loca_ltime, disappeared_at__gt=loca_ltime)
     for entity in entities:
-        add_pokemon(folium_map, entity.lat, entity.lon, abs_uri.rstrip("/") + entity.pokemon.image.url)
+        image_url = request.build_absolute_uri(location=entity.pokemon.image.url)
+        add_pokemon(folium_map, entity.lat, entity.lon, image_url)
     pokemons_on_page = []
     pokemons = Pokemon.objects.all()
     for pokemon in pokemons:
+        image_url = request.build_absolute_uri(location=pokemon.image.url)
         pokemons_on_page.append(
             {
                 "pokemon_id": pokemon.id,
-                "img_url": abs_uri.rstrip("/") + pokemon.image.url,
+                "img_url": image_url,
                 "title_ru": pokemon.name,
             }
         )
@@ -62,19 +63,18 @@ def show_pokemon(request, pokemon_id):
     except Pokemon.DoesNotExist:
         return HttpResponseNotFound("<h1>Такой покемон не найден</h1>")
     pokemon_json = {}
-    abs_uri: str = request.build_absolute_uri("/")
     pokemon_json["pokemon_id"] = pokemon.pk
     pokemon_json["title_ru"] = pokemon.name
     pokemon_json["title_en"] = pokemon.name_en
     pokemon_json["title_jp"] = pokemon.name_jp
     pokemon_json["description"] = pokemon.description
-    pokemon_json["img_url"] = abs_uri.rstrip("/") + pokemon.image.url
+    pokemon_json["img_url"] = request.build_absolute_uri(location=pokemon.image.url)
     ancestor: Pokemon = pokemon.ancestor
     if ancestor:
         ancestor_json = {}
         ancestor_json["title_ru"] = ancestor.name
         ancestor_json["pokemon_id"] = ancestor.pk
-        ancestor_json["img_url"] = abs_uri.rstrip("/") + ancestor.image.url
+        ancestor_json["img_url"] = request.build_absolute_uri(location=ancestor.image.url)
         pokemon_json["previous_evolution"] = ancestor_json
     descendants = pokemon.descendants.all()
     if descendants:
@@ -82,11 +82,12 @@ def show_pokemon(request, pokemon_id):
         descendant_json = {}
         descendant_json["title_ru"] = descendant.name
         descendant_json["pokemon_id"] = descendant.pk
-        descendant_json["img_url"] = abs_uri.rstrip("/") + descendant.image.url
+        descendant_json["img_url"] = request.build_absolute_uri(location=descendant.image.url)
         pokemon_json["next_evolution"] = descendant_json
     local_time = localtime()
     entities = pokemon.entities.filter(appeared_at__lte=local_time, disappeared_at__gt=local_time)
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
     for entity in entities:
-        add_pokemon(folium_map, entity.lat, entity.lon, abs_uri.rstrip("/") + entity.pokemon.image.url)
+        image_url = request.build_absolute_uri(location=entity.pokemon.image.url)
+        add_pokemon(folium_map, entity.lat, entity.lon, image_url)
     return render(request, "pokemon.html", context={"map": folium_map._repr_html_(), "pokemon": pokemon_json})

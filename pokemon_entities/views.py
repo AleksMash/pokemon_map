@@ -60,27 +60,30 @@ def show_all_pokemons(request):
 
 def show_pokemon(request, pokemon_id):
     pokemon = get_object_or_404(Pokemon, pk=pokemon_id)
-    pokemon_json = {}
-    pokemon_json["pokemon_id"] = pokemon.pk
-    pokemon_json["title_ru"] = pokemon.name
-    pokemon_json["title_en"] = pokemon.name_en
-    pokemon_json["title_jp"] = pokemon.name_jp
-    pokemon_json["description"] = pokemon.description
-    pokemon_json["img_url"] = request.build_absolute_uri(location=pokemon.image.url)
+    pokemon_json = {
+        'pokemon_id': pokemon.pk,
+        'title_ru': pokemon.name,
+        'title_en': pokemon.name_en,
+        'title_jp': pokemon.name_jp,
+        'description': pokemon.description,
+        'img_url': request.build_absolute_uri(location=pokemon.image.url),
+    }
     ancestor: Pokemon = pokemon.ancestor
     if ancestor:
-        ancestor_json = {}
-        ancestor_json["title_ru"] = ancestor.name
-        ancestor_json["pokemon_id"] = ancestor.pk
-        ancestor_json["img_url"] = request.build_absolute_uri(location=ancestor.image.url)
+        ancestor_json = {
+            'title_ru': ancestor.name,
+            'pokemon_id': ancestor.pk,
+            'img_url': request.build_absolute_uri(location=ancestor.image.url),
+        }
         pokemon_json["previous_evolution"] = ancestor_json
     descendants = pokemon.descendants.all()
     if descendants:
         descendant = descendants[0]
-        descendant_json = {}
-        descendant_json["title_ru"] = descendant.name
-        descendant_json["pokemon_id"] = descendant.pk
-        descendant_json["img_url"] = request.build_absolute_uri(location=descendant.image.url)
+        descendant_json = {
+            'title_ru': descendant.name,
+            'pokemon_id': descendant.pk,
+            'img_url': request.build_absolute_uri(location=descendant.image.url),
+        }
         pokemon_json["next_evolution"] = descendant_json
     local_time = localtime()
     entities = pokemon.entities.filter(appeared_at__lte=local_time, disappeared_at__gt=local_time)
